@@ -1,0 +1,62 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+df = pd.read_csv('raw_sales_data.csv')
+questions = [
+    "What is the average sales per region?",
+    "Which month has the highest total sales?",
+    "Are there any outliers in sales?",
+    "How is sales performance varying by region over time?"
+]
+print("✅ Key Questions for EDA:")
+for q in questions:
+    print(f"• {q}")
+print("\n📋 Data Info:")
+print(df.info())
+print("\n📊 Summary Statistics:")
+print(df.describe())s
+print("\n🔍 Unique values:")
+print(df['Region'].unique())
+print(df['Month'].unique())
+region_sales = df.groupby('Region')['Sales'].sum().sort_values(ascending=False)
+print("\n📊 Total Sales by Region:")
+print(region_sales)
+monthly_sales = df.groupby('Month')['Sales'].sum().reindex(['Jan', 'Feb', 'Mar', 'Apr', 'May'])
+print("\n📈 Monthly Sales:")
+print(monthly_sales)
+plt.figure(figsize=(6, 4))
+sns.boxplot(data=df, x='Region', y='Sales')
+plt.title('Sales Distribution by Region')
+plt.tight_layout()
+plt.show()
+plt.figure(figsize=(6, 4))
+monthly_sales.plot(marker='o', color='blue')
+plt.title('Monthly Sales Trend')
+plt.xlabel('Month')
+plt.ylabel('Sales')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+pivot = df.pivot_table(values='Sales', index='Region', columns='Month', aggfunc='sum')
+plt.figure(figsize=(6, 4))
+sns.heatmap(pivot, annot=True, fmt='.0f', cmap='Blues')
+plt.title('Sales Heatmap')
+plt.tight_layout()
+plt.show()
+from scipy.stats import f_oneway
+north = df[df['Region'] == 'North']['Sales']
+south = df[df['Region'] == 'South']['Sales']
+east = df[df['Region'] == 'East']['Sales']
+west = df[df['Region'] == 'West']['Sales']
+f_stat, p_value = f_oneway(north, south, east, west)
+print("\n🧪 ANOVA Test Results:")
+print(f"F-statistic = {f_stat:.2f}, p-value = {p_value:.4f}")
+if p_value < 0.05:
+    print("👉 Significant difference in average sales between regions.")
+else:
+    print("👉 No significant difference in average sales between regions.")
+print("\n🔧 Missing Values:")
+print(df.isnull().sum())
+
+print("\n🧹 Duplicate Rows:", df.duplicated().sum())
