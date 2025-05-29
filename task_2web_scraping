@@ -1,0 +1,21 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+url = 'http://books.toscrape.com/catalogue/page-{}.html'
+book_titles = []
+book_ratings = []
+for page in range(1, 6):
+    response = requests.get(url.format(page))
+    soup = BeautifulSoup(response.content, 'html.parser')
+    books = soup.find_all('article', class_='product_pod')
+    for book in books:
+        title = book.h3.a['title']
+        book_titles.append(title)
+        rating_class = book.p['class'][1]
+        book_ratings.append(rating_class)
+df = pd.DataFrame({
+    'Title': book_titles,
+    'Rating': book_ratings
+})
+df.to_csv('books_data.csv', index=False)
+print("Scraping completed. Data saved to books_data.csv")
